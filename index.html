@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>CS194-26 Proj2</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        div {
+            padding-bottom: 8px;
+        }
+        .caption {
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Adel Setoodehnia | CS194-26 Project 2</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#Intro">Introduction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pt1">Part 1</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pt2">Part 2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <!-- <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-1"></div>
+        </div> -->
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p></p>
+                
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        
+        <div class="row" id=Intro>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h3>Introduction</h3>
+                <p>
+                    This project will deal with an array of different things.  So without rambling on for too much, let's just get right into it!
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        
+        
+        <div class="row" id=pt1>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-11">
+                <h3>Fun with Filters</h3>
+                <p>In this part of the project, we will build intuitions about 2D convolutions and filtering!</p>
+                <h5>Finite Difference Operator</h5>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    So our first task here will be dealing with edge detection.  In the last project, I kind of just googled and imported some handy python functions to do the trick for us, but now let's try to build some intuition about how this actually works.
+                </p>
+                <p>
+                    What makes an edge in an image unique from the rest of it?  Edges, are characterized by the change in brightness between nearby pixels.  Take the following picture of a cameraman for example:
+                </p>
+                <img src="img/cameraman.png" class="mx-auto d-block" style="width:50%">
+                <p></p>
+                <p>
+                    We can see that the edges that outline the man in the picture have a very noticeable boundary that has a stark change in brightness, from his black jacket to the gray background.  Now the question becomes: <b>how do we actually detect these changes in brightness?</b>
+                </p>
+                <p>We use the <b>gradient!</b>  Here we refer to the classic finite difference operators:</p>
+                <p>
+                    $$D_x=\begin{bmatrix}
+                    1 & -1
+                    \end{bmatrix}\ \ \ \ \ \ \ \ \ D_y=\begin{bmatrix}
+                    1 \\
+                    -1
+                    \end{bmatrix}$$
+                </p>
+                <p>
+                    By convolving these filters over our input image, we are effectively approximating the partial derivatives.  Let's see what the effect of it on our cameraman image is...
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_1/cameraman_D_x.png" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">$$\text{Im}\otimes D_x\ \text{(vertical edges)}$$ </div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_1/cameraman_D_y.png" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">$$\text{Im}\otimes D_y\ \text{(horizontal edges)}$$</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    Awesome! As you can see, we have approximated the partial derivatives in the x and y direction, resulting in the vertical and horizontal edges being highlighted above.  But we still want to somehow need to get the gradient from all of this!  Wait, let us recall our multivariable calculus knowledge for a second here... the gradient of our input image would be the following tensor: 
+                    $$\nabla\text{Im} = \begin{bmatrix}
+                    \frac{\partial}{\partial x}\text{Im} & \frac{\partial}{\partial y}\text{Im}
+                    \end{bmatrix}$$
+                    Using our convolution operation in lieu of the partial derivative operater gives us
+                    $$\nabla\text{Im} = \begin{bmatrix}
+                    \text{Im}\otimes D_x & \text{Im}\otimes D_y
+                    \end{bmatrix}$$
+                    What remains is the fact that this has yet to be converted into an image.  Thus, we take the magnitude and display the resulting image, on which we apply a threshold to binarize the result, turing it into an edge image!
+                    $$|\nabla\text{Im}| = \sqrt{(\text{Im}\otimes D_x)^2 + (\text{Im}\otimes D_y)^2}$$
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_1/cameraman_grad_mag.png" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gradient magnitude image</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_1/cameraman_grad_thresh.png" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">edge image (threshold = 0.15)</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h5>Derivative of Gaussian (DoG) Filter</h5>
+                <p></p>
+                <p>
+                    It's worth noting, that albeit our results look pretty dope, they do seem to be a little noisy and far from perfect.  In order to combat this, we try smoothing the image first with a Gaussian!  We accomplish this in two ways: <b>1.</b> we first convolve our image with the Gaussian and then repeat the process as above, and <b>2.</b> we create convolutional filters for the derivative of the Gaussian (DoG), and convolve that onto our image.  Let's view the results of the first method below, by first applying our Gaussian!
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <img src="part_1/1_2/gaussian_cameraman.png" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">blurred with Gaussian</div>
+            </div>
+            <div class="col-sm-4"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/gaussian_cameraman_D_x.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">$$\text{Im}_G\otimes D_x\ \text{(vertical edges)}$$</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/gaussian_cameraman_D_y.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">$$\text{Im}_G\otimes D_y\ \text{(horizontal edges)}$$</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/gaussian_cameraman_grad_mag.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">Gaussian gradient magnitude image</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/gaussian_cameraman_grad_thresh.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">Gaussian edge image (threshold = 0.05)</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    Now we view the results of the second method!
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/DoG_cameraman_D_x.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">$$\text{Im}_{DoG}\otimes D_x\ \text{(vertical edges)}$$</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/DoG_cameraman_D_y.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">$$\text{Im}_{DoG}\otimes D_y\ \text{(horizontal edges)}$$</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/DoG_cameraman_grad_mag.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">DoG gradient magnitude image</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_2/DoG_cameraman_grad_thresh.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">DoG edge image (threshold = 0.05)</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                Well would you look at that! The results are the same!  This is because the convolution operation is actually commutative, go figure :)
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h5>Image Straightening</h5>
+                <p></p>
+                <p>
+                    Before I dive in, let's take a look at the this image:
+                </p>
+                <img src="img/facade.jpg" class="mx-auto d-block" style="width:50%">
+                <p></p>
+                <p>
+                    If you're anything like me, that slight tilt in photo taken is just driving you insane.  So now let's put our edge detecting skills to some use and straighten everything out.
+                </p>
+                <p>
+                    We are going to rotate this image several times, and for each orientation, our algorithm will need to decide whether or not this is the proper angle of rotation.  In order to do this, we need to first define some type of scoring method, or heuristic, to quantitatively measure what makes one orientation better than another.  We choose to make use of the fact that straightened photographs tend to love vertical and horizontal edges (gravity).  So the image with the most vertical and horizontal edges will be declared the chosen one!
+                </p>
+                <p>
+                    The way we go about actually measure this has to do with something we've already touched upon: partial derivatives.  By taking the partials with respect to x and y, as we did in the previous part, we can develop the following formula:
+                    $$\theta = \arctan(-(\partial \text{Im} / \partial y) / (\partial \text{Im} / \partial x))$$
+                    Let's view the distributions of the angles of the above image in the following histogram:
+                    <img src="part_1/1_3/original_hist_facade.jpg" class="mx-auto d-block" style="width:50%">
+                </p>
+                <p>
+                    Now, by just tallying up the frequency of angles near 0, 90, and 180 degrees, we have defined ourselves a heuristic with which we can straighten our images!  Let's view the results for our image above:
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/result_facade.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/-4_hist_facade.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p></p>
+                <p>
+                    Nice, this seems to work pretty well!  Let's try doing this on a few images from my personal collection now :)
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/me_redwoods.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/result_me_redwoods.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/original_hist_me_redwoods.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/-5_hist_me_redwoods.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/me_NYSE.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/result_me_NYSE.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/original_hist_me_NYSE.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/-25_hist_me_NYSE.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/me_diner.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/result_me_diner.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/original_hist_me_diner.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/-4_hist_me_diner.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/me_desert.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/result_me_desert.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/original_hist_me_desert.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_1/1_3/0_hist_me_desert.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    Okay so the last one didn't quite work out, but I think that's pretty good still!
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row" id=pt2>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h3>Fun with Frequencies!</h3>
+                <p>
+                    Now it's time to do some more cool stuff.
+                </p>
+                <h5>Image "Sharpening"</h5>
+                <p>
+                    Going back to our Gaussian filter from earlier, we can now develop a way to "sharpen" a blurry image!  Since the Gaussian is a low pass filter that retains low frequencies, we just need to subtract a blurred version of the from the original.  This will then give us the high frequencies!  Adding this back to the original image will thus give us a "sharpened" look.  Thanks to our newfound understanding of convolutions, all of these operations and be condensed into one convolutional filter!
+                    $$\text{Im}\otimes[(1 + \alpha)e - \alpha\cdot G]$$
+                    Below we view the results of this on some images.
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/taj.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_1/taj_sharp.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/nyc.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_1/nyc_sharp.jpg" class="mx-auto d-block" style="width:96%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row" id=pt2>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    And now we try to blur an image, and resharpen it and compare it against the original!
+                </p>
+                <img src="img/sugar_bowl.jpg" class="mx-auto d-block" style="width:50%">
+                <div class="caption center-block">original</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_2/2_1/sugar_bowl_blurred.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">blurred</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_1/sugar_bowl_sharp.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">sharpened</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h5>Hybrid Images</h5>
+                <p></p>
+                <p>
+                    Now things are getting really interesting.  The goal of this section is to create hybrid images using the approach described in the <a href="http://cvcl.mit.edu/publications/OlivaTorralb_Hybrid_Siggraph06.pdf" target="_blank" style="text-decoration:none">SIGGRAPH 2006 paper</a> by Oliva, Torralba, and Schyns.  Basically, by taking the low frequencies of the one image and the high frequencies of another, we can make a hybrid image by combining these frequencies.  Let's try it out!
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/DerekPicture.jpg" class="mx-auto d-block" style="width:70%">
+            </div>
+            <div class="col-sm-5">
+                <img src="img/nutmeg.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/derek_nutmeg.png" class="mx-auto d-block" style="width:70%">
+                <div class="caption center-block">zoomed in</div>
+                <p>And now, for my personal favorite...</p>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/derek_nutmeg.png" class="mx-auto d-block" style="width:20%">
+                <div class="caption center-block">zoomed out</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/messi.png" class="mx-auto d-block" style="width:70%">
+                <p></p>
+                <p>First let's view these frequencies in the Fourier domain...</p>
+            </div>
+            <div class="col-sm-5">
+                <img src="img/goat.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/messi_low_fft.jpg" class="mx-auto d-block" style="width:70%">
+                <div class="caption center-block">Messi high frequency</div>
+                <p>Now for the cool part...</p>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/goat_high_fft.jpg" class="mx-auto d-block" style="width:70%">
+                <div class="caption center-block">Goat low frequency</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/messi_goat.png" class="mx-auto d-block" style="width:80%">
+                <div class="caption center-block">zoomed in</div>
+                <p>aaaaand one more...</p>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/messi_goat.png" class="mx-auto d-block" style="width:20%">
+                <div class="caption center-block">zoomed out</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/zlatan.jpg" class="mx-auto d-block" style="width:94%">
+            </div>
+            <div class="col-sm-5">
+                <img src="img/lion.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/zlatan_lion.jpg" class="mx-auto d-block" style="width:97%">
+                <div class="caption center-block">zoomed in</div>
+            </div>
+            <div class="col-sm-5">
+                <img src="part_2/2_2/zlatan_lion.jpg" class="mx-auto d-block" style="width:30%">
+                <div class="caption center-block">zoomed out</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h5>Gaussian and Laplacian Stacks</h5>
+                <p></p>
+                <p>
+                    Now we're going to explore the effect of Gaussian and Laplacian stacks on images (this stuff will come in handy during the next and final portion).  Take Salvador Dalí's painting for instance:
+                </p>
+                <img src="img/lincoln.jpg" class="mx-auto d-block" style="width:35%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_gauss_0.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_gauss_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_gauss_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_gauss_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_gauss_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_laplace_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_laplace_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_laplace_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_laplace_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/dali_laplace_5.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_gauss_0.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_gauss_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_gauss_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_gauss_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_gauss_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_laplace_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_laplace_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_laplace_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_laplace_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/messi_goat_laplace_5.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_gauss_0.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_gauss_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_gauss_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_gauss_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_gauss_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">gaussian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_laplace_1.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 0</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_laplace_2.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 1</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_laplace_3.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 2</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_laplace_4.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 3</div>
+            </div>
+            <div class="col-sm-2">
+                <img src="part_2/2_3/face_laplace_5.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">laplacian level 4</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <h5>Multiresolution Blending!</h5>
+                <p></p>
+                <p>
+                    And now, the piece de resistance!  Now we will be blending two images seamlessly using a multi resolution blending tecnique as described in the <a href="http://persci.mit.edu/pub_pdfs/spline83.pdf" target="_blank" style="text-decoration:none">1983 paper</a> by Burt and Adelson.  First let's take a look at what we're dealing with here...
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5">
+                <img src="img/apple.jpeg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-5">
+                <img src="img/orange.jpeg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <p>
+                    To successfully blend the apple with the orange, we first decompose the two images into laplacian stacks (of depth n) L_a and L_o respectively.  Then we take a binary mask of what part of the image we want to overlay, and decompose that into a gaussian stack, G_m.  We then combine them according to the following formula to retrieve the blended image.
+                    $$\text{Im}_{blended} = \sum_{i=1}^n(G_m\odot L_a + (1 - G_m)\odot L_o)$$
+                </p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_0_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">0</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_1_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">1</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_2_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">2</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_3_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">3</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_4_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">4</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_5_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">5</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_6_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">6</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_7_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">7</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_8_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">8</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_9_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">9</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_10_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">10</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_11_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">11</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_12_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">12</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_13_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">13</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_14_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">14</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_15_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">15</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_16_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">16</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_17_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">17</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_18_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">18</div>
+            </div>
+            <div class="col-sm-1">
+                <img src="part_2/2_4/level_19_orapple.jpg" class="mx-auto d-block" style="width:100%">
+                <div class="caption center-block">19</div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <img src="part_2/2_4/orapple.jpg" class="mx-auto d-block" style="width:50%">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <img src="img/nyc_day.png" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-4">
+                <img src="img/nyc_night.png" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-4">
+                <img src="part_2/2_4/nyc_blended.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <img src="img/me_for_matt.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-4">
+                <img src="img/matt_for_me.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+            <div class="col-sm-4">
+                <img src="part_2/2_4/me_and_matt.jpg" class="mx-auto d-block" style="width:100%">
+            </div>
+        </div>
+
+
+    </div>
+
+    
+        
+</body>
+
+</html>
